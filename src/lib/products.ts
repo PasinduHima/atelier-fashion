@@ -104,6 +104,18 @@ export async function getRelatedProducts(productId: number, categorySlug: string
   return rows.map(toProduct);
 }
 
+/** Active products in one category, newest first. */
+export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products", "categories");
+
+  const rows = await selectProducts()
+    .where(and(eq(products.isActive, true), eq(categories.slug, categorySlug)))
+    .orderBy(desc(products.createdAt));
+  return rows.map(toProduct);
+}
+
 /** Slugs of every active product, for `generateStaticParams`. */
 export async function getAllProductSlugs(): Promise<string[]> {
   "use cache";
@@ -124,4 +136,17 @@ export async function getCategories(): Promise<Category[]> {
     .from(categories)
     .orderBy(asc(categories.sortOrder), asc(categories.name));
   return rows;
+}
+
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("categories");
+
+  const [row] = await db
+    .select({ slug: categories.slug, name: categories.name, image: categories.imageUrl, alt: categories.imageAlt })
+    .from(categories)
+    .where(eq(categories.slug, slug))
+    .limit(1);
+  return row ?? null;
 }
