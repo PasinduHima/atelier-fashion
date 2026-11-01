@@ -134,6 +134,13 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    /* Reserve the scrollbar's space so locking scroll (open drawer) doesn't shift the layout. */
+    scrollbar-gutter: stable;
+  }
+
+  /* Lock page scroll while the menu drawer is open. */
+  html:has(dialog.drawer[open]) {
+    overflow: hidden;
   }
 
   body {
@@ -202,6 +209,60 @@
    switches the focus ring to white so it stays visible. */
 @utility surface-dark {
   --focus-ring: var(--color-paper);
+}
+
+/* Slide-out menu drawer on a native <dialog> (opened with showModal()):
+   full width on mobile, 28rem from tablet, sliding in from the left over a
+   scrim drawn with ::backdrop. allow-discrete keeps it rendered while it
+   slides out after close(). */
+@utility drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow-y: auto;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  translate: -100% 0;
+  transition:
+    translate var(--duration-slow) var(--ease-luxe),
+    overlay var(--duration-slow) allow-discrete,
+    display var(--duration-slow) allow-discrete;
+
+  &[open] {
+    translate: 0 0;
+  }
+
+  &::backdrop {
+    background: transparent;
+    transition:
+      background-color var(--duration-base) var(--ease-luxe),
+      overlay var(--duration-base) allow-discrete,
+      display var(--duration-base) allow-discrete;
+  }
+
+  &[open]::backdrop {
+    background: var(--color-scrim);
+  }
+
+  @starting-style {
+    &[open] {
+      translate: -100% 0;
+    }
+
+    &[open]::backdrop {
+      background: transparent;
+    }
+  }
+
+  @media (width >= 48rem) {
+    width: 28rem;
+  }
 }
 
 /* -----------------------------------------------------------------------------
