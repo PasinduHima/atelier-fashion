@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="media-cover relative h-[calc(100svh-var(--header-h)-2rem)] min-h-[36rem] bg-ink"
+      className="media-cover surface-dark relative h-[calc(100svh-var(--header-h)-2rem)] min-h-[36rem] bg-ink"
     >
       <Image
         src={hero.image}

@@ -51,8 +51,8 @@ export function getStockState(stock: number): StockState {
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
-  maximumFractionDigits: 0,
+  trailingZeroDisplay: "stripIfInteger",
 });
 
-/** Formats a price in cents, e.g. 245000 -> "$2,450". */
+/** Formats a price in cents, e.g. 245000 -> "$2,450", 199950 -> "$1,999.50". */
 export const formatPrice = (cents: number) => priceFormatter.format(cents / 100);

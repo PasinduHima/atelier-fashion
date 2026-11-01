@@ -33,7 +33,7 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-ink text-paper">
+    <footer className="surface-dark bg-ink text-paper">
       <div className="container-site grid gap-12 py-16 lg:grid-cols-12 lg:gap-8 lg:py-24">
         <div className="flex flex-col gap-6 lg:col-span-5">
           <h2 className="type-label">Sign up for updates</h2>
