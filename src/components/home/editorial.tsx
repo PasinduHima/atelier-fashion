@@ -8,7 +8,7 @@ import { getCategories } from "@/lib/products";
 /** Full-bleed campaign band with copy over the image. */
 export function Campaign() {
   return (
-    <section aria-labelledby="campaign-title" className="media-cover scrim relative h-[85svh] min-h-[32rem] bg-ink">
+    <section aria-labelledby="campaign-title" className="media-cover scrim surface-dark relative h-[85svh] min-h-[32rem] bg-ink">
       <Image src={campaign.image} alt={campaign.alt} fill sizes="100vw" className="object-[50%_30%]" />
       <div className="absolute inset-0 z-10 flex items-end text-paper">
         <div className="container-site flex flex-col items-start gap-4 pb-12 md:pb-16 lg:pb-20">

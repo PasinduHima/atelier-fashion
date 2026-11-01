@@ -30,7 +30,7 @@ export function ProductCard({
           style={{ objectFit: "cover" }}
         />
         {badge ? (
-          <span className="type-caption absolute top-3 left-3 uppercase md:top-4 md:left-4">
+          <span className="type-caption absolute top-3 left-3 bg-paper px-1.5 py-0.5 uppercase md:top-4 md:left-4">
             {badge}
           </span>
         ) : null}
