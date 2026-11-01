@@ -17,19 +17,41 @@ export type Product = {
   priceCents: number;
   image: string;
   badge: string | null;
-  /** Units available. 0 = sold out; 1 to LOW_STOCK_THRESHOLD = low stock. */
+  /**
+   * Units available across all active variants. 0 = sold out;
+   * 1 to LOW_STOCK_THRESHOLD = low stock.
+   */
   stock: number;
   description: string;
   /** Composition, measurements and care, one fact per line. */
   details: string[];
-  isGift: boolean;
 };
+
+/** A purchasable size/colour of a product. */
+export type Variant = {
+  id: number;
+  sku: string;
+  /** e.g. "M", "EU 38" or "One size". */
+  size: string;
+  color: string | null;
+  /** Effective price in cents: the variant override, else the product price. */
+  priceCents: number;
+  stock: number;
+};
+
+export type ProductWithVariants = Product & { variants: Variant[] };
 
 export type Category = {
   slug: string;
   name: string;
   image: string;
   alt: string;
+};
+
+export type Collection = {
+  slug: string;
+  name: string;
+  description: string;
 };
 
 /** Collection URL for a category slug, e.g. "ready-to-wear" -> /collections/ready-to-wear. */

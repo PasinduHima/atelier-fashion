@@ -3,14 +3,25 @@ import "server-only";
 import { and, asc, desc, eq, ne, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
-import { categories, products, productStock } from "@/db/catalog-schema";
-import type { Category, Product } from "@/lib/catalog";
+import { categories, collectionProducts, collections, products, productVariants } from "@/db/catalog-schema";
+import type { Category, Collection, Product, ProductWithVariants, Variant } from "@/lib/catalog";
 
 /**
- * Catalog reads. Product queries include stock, so they get a short cache life;
- * anything that changes products or stock should call
- * `revalidateTag("products", "max")` (or `updateTag("products")` in a server action).
+ * Cached catalog reads for the storefront. Product queries include stock, so
+ * they get a short cache life. Anything that writes products, variants or
+ * stock must call `revalidateTag("products", "max")` (or `updateTag("products")`
+ * in a server action); collection and category writes use the `collections`
+ * and `categories` tags.
+ *
+ * These reads can be minutes stale. Never use them to decide whether
+ * something can be bought: the cart checks live stock itself (`@/lib/cart`).
  */
+
+/** Units across a product's active variants. */
+const totalStock = sql<number>`coalesce((
+  select sum(${productVariants.stock}) from ${productVariants}
+  where ${productVariants.productId} = ${products.id} and ${productVariants.isActive}
+), 0)`.mapWith(Number);
 
 const productColumns = {
   id: products.id,
@@ -21,19 +32,17 @@ const productColumns = {
   priceCents: products.priceCents,
   imageUrl: products.imageUrl,
   badge: products.badge,
-  isGift: products.isGift,
   categorySlug: categories.slug,
   categoryName: categories.name,
-  stock: sql<number>`coalesce(${productStock.quantity}, 0)`.mapWith(Number),
+  stock: totalStock,
 };
 
-/** Active products joined to their category and stock. */
+/** Products joined to their category, with total stock. */
 function selectProducts() {
   return db
     .select(productColumns)
     .from(products)
     .innerJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(productStock, eq(productStock.productId, products.id))
     .$dynamic();
 }
 
@@ -51,7 +60,6 @@ function toProduct(row: ProductRow): Product {
     stock: row.stock,
     description: row.description,
     details: row.details,
-    isGift: row.isGift,
   };
 }
 
@@ -68,19 +76,13 @@ export async function getNewArrivals(limit = 8): Promise<Product[]> {
   return rows.map(toProduct);
 }
 
-/** Active products flagged for the gift edit. */
+/** Active products in the "gifts" collection, for the home page rail. */
 export async function getGiftEdit(): Promise<Product[]> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag("products");
-
-  const rows = await selectProducts()
-    .where(and(eq(products.isActive, true), eq(products.isGift, true)))
-    .orderBy(desc(products.createdAt));
-  return rows.map(toProduct);
+  return getProductsByCollection("gifts");
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+/** An active product with its active variants, in display order. */
+export async function getProductBySlug(slug: string): Promise<ProductWithVariants | null> {
   "use cache";
   cacheLife("minutes");
   cacheTag("products");
@@ -88,7 +90,23 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   const [row] = await selectProducts()
     .where(and(eq(products.slug, slug), eq(products.isActive, true)))
     .limit(1);
-  return row ? toProduct(row) : null;
+  if (!row) return null;
+
+  const variants: Variant[] = await db
+    .select({
+      id: productVariants.id,
+      sku: productVariants.sku,
+      size: productVariants.size,
+      color: productVariants.color,
+      priceCents: sql<number>`coalesce(${productVariants.priceCents}, ${products.priceCents})`.mapWith(Number),
+      stock: productVariants.stock,
+    })
+    .from(productVariants)
+    .innerJoin(products, eq(productVariants.productId, products.id))
+    .where(and(eq(productVariants.productId, row.id), eq(productVariants.isActive, true)))
+    .orderBy(asc(productVariants.sortOrder), asc(productVariants.id));
+
+  return { ...toProduct(row), variants };
 }
 
 /** Products to suggest on a product page: same category first, then the rest. */
@@ -112,6 +130,20 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
 
   const rows = await selectProducts()
     .where(and(eq(products.isActive, true), eq(categories.slug, categorySlug)))
+    .orderBy(desc(products.createdAt));
+  return rows.map(toProduct);
+}
+
+/** Active products in one collection, newest first. */
+export async function getProductsByCollection(collectionSlug: string): Promise<Product[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products", "collections");
+
+  const rows = await selectProducts()
+    .innerJoin(collectionProducts, eq(collectionProducts.productId, products.id))
+    .innerJoin(collections, eq(collections.id, collectionProducts.collectionId))
+    .where(and(eq(products.isActive, true), eq(collections.slug, collectionSlug)))
     .orderBy(desc(products.createdAt));
   return rows.map(toProduct);
 }
@@ -148,5 +180,24 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
     .from(categories)
     .where(eq(categories.slug, slug))
     .limit(1);
+  return row ?? null;
+}
+
+const collectionColumns = { slug: collections.slug, name: collections.name, description: collections.description };
+
+export async function getCollections(): Promise<Collection[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("collections");
+
+  return db.select(collectionColumns).from(collections).orderBy(asc(collections.sortOrder), asc(collections.name));
+}
+
+export async function getCollectionBySlug(slug: string): Promise<Collection | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("collections");
+
+  const [row] = await db.select(collectionColumns).from(collections).where(eq(collections.slug, slug)).limit(1);
   return row ?? null;
 }

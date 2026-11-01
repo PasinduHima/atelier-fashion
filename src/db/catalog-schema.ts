@@ -1,11 +1,11 @@
 /**
- * Catalog tables: categories, products and stock.
+ * App tables: categories, products, variants (with stock) and collections.
  *
  * Kept out of `schema.ts` on purpose: `npm run auth:generate` overwrites that
  * file with the Better Auth tables.
  */
 import { relations, sql } from "drizzle-orm";
-import { boolean, check, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, check, index, integer, pgTable, primaryKey, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -41,7 +41,6 @@ export const products = pgTable(
     priceCents: integer("price_cents").notNull(),
     imageUrl: text("image_url").notNull(),
     badge: text("badge"),
-    isGift: boolean("is_gift").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
     ...timestamps,
   },
@@ -52,28 +51,82 @@ export const products = pgTable(
   ],
 );
 
-export const productStock = pgTable(
-  "product_stock",
+/**
+ * A purchasable size/colour of a product. Every product has at least one;
+ * products without sizes get a single "One size" variant. Stock lives here.
+ */
+export const productVariants = pgTable(
+  "product_variants",
   {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     productId: integer("product_id")
-      .primaryKey()
+      .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
+    size: text("size").notNull(),
+    color: text("color"),
+    sku: text("sku").notNull().unique(),
+    /** Overrides the product price when set. Cents (USD). */
+    priceCents: integer("price_cents"),
     /** Units available. 0 = sold out. */
-    quantity: integer("quantity").notNull().default(0),
-    updatedAt: timestamps.updatedAt,
+    stock: integer("stock").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    ...timestamps,
   },
-  (t) => [check("product_stock_quantity_non_negative", sql`${t.quantity} >= 0`)],
+  (t) => [
+    index("product_variants_product_id_idx").on(t.productId),
+    unique("product_variants_product_size_color_unique").on(t.productId, t.size, t.color).nullsNotDistinct(),
+    check("product_variants_stock_non_negative", sql`${t.stock} >= 0`),
+    check("product_variants_price_cents_non_negative", sql`${t.priceCents} IS NULL OR ${t.priceCents} >= 0`),
+  ],
+);
+
+/** Merchandising groups (women, gifts, new-in…) that cut across categories. */
+export const collections = pgTable("collections", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  ...timestamps,
+});
+
+export const collectionProducts = pgTable(
+  "collection_products",
+  {
+    collectionId: integer("collection_id")
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.collectionId, t.productId] }),
+    index("collection_products_product_id_idx").on(t.productId),
+  ],
 );
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
 }));
 
-export const productsRelations = relations(products, ({ one }) => ({
+export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
-  stock: one(productStock),
+  variants: many(productVariants),
+  collections: many(collectionProducts),
 }));
 
-export const productStockRelations = relations(productStock, ({ one }) => ({
-  product: one(products, { fields: [productStock.productId], references: [products.id] }),
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}));
+
+export const collectionsRelations = relations(collections, ({ many }) => ({
+  products: many(collectionProducts),
+}));
+
+export const collectionProductsRelations = relations(collectionProducts, ({ one }) => ({
+  collection: one(collections, { fields: [collectionProducts.collectionId], references: [collections.id] }),
+  product: one(products, { fields: [collectionProducts.productId], references: [products.id] }),
 }));

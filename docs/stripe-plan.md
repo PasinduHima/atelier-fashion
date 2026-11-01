@@ -43,7 +43,7 @@ Hygiene:
 
 ## 3. Data model (`src/db/catalog-schema.ts`, versioned migration)
 
-These tables assume the upcoming variants work adds `product_variants` (id, product_id, size/colour, sku, optional `price_cents` override), with stock moved to the variant level as `variant_stock`. Adjust the names to match whatever you build.
+Variants live in `product_variants` (id, product_id, size, color, sku, optional `price_cents` override), and stock is the `product_variants.stock` column (CHECK ≥ 0).
 
 - **`orders`**
   - `id`, `public_id` (unguessable, used in URLs)
@@ -114,7 +114,7 @@ These tables assume the upcoming variants work adds `product_variants` (id, prod
 
 **Fulfill** runs as one atomic `db.batch`:
 1. `UPDATE orders SET status='paid', paid_at=now(), email, shipping, payment_intent … WHERE id = $1 AND status = 'pending' RETURNING id`. Only a transition from `pending` continues, which gives a second idempotency guard.
-2. Decrement stock per item with a conditional update: `UPDATE variant_stock SET quantity = quantity - $n WHERE variant_id = $v AND quantity >= $n`.
+2. Decrement stock per item with a conditional update: `UPDATE product_variants SET stock = stock - $n WHERE id = $v AND stock >= $n`.
 3. If any decrement touched 0 rows, the item oversold. Set the order to `needs_attention` and, optionally, refund automatically with `stripe.refunds.create({ payment_intent })`.
 
 After that, call `revalidateTag("products", "max")` so storefront stock updates (the CLAUDE.md rule). Recompute and display amounts from the **session** (`amount_subtotal`, `shipping_cost.amount_total`, `amount_total`), and if they don't match the order's totals, flag the order.
