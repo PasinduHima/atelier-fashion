@@ -16,7 +16,7 @@ export function register() {
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variable${missing.length > 1 ? "s" : ""}: ${missing.join(", ")}. ` +
-        "Set them in .env.local for local development (see .env.example) and in your hosting " +
+        "Set them in .env for local development (see .env.example) and in your hosting " +
         "provider's environment settings for Preview and Production.",
     );
   }

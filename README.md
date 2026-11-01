@@ -7,7 +7,7 @@ Next.js (App Router) + TypeScript + Tailwind CSS v4, with Better Auth, Drizzle O
 Requires Node.js 20.9.0 or later.
 
 1. `npm install`
-2. `cp .env.example .env.local` and fill in:
+2. `cp .env.example .env` and fill in:
    - `DATABASE_URL`: the Neon **pooled** connection string
    - `BETTER_AUTH_SECRET`: generate one with `npx auth@latest secret`
    - `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL`: the site URL (`http://localhost:3000` in development)

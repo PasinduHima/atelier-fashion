@@ -16,12 +16,14 @@ never read .env
 
 ## Setup / environment
 
-Copy `.env.example` to `.env.local`. Required values: `DATABASE_URL` (the Neon **pooled** connection string), `BETTER_AUTH_SECRET` (generate with `npx auth@latest secret`), `BETTER_AUTH_URL`, and `NEXT_PUBLIC_APP_URL`. `drizzle.config.ts` loads `.env.local` and then `.env` through dotenv. Both it and `src/db/index.ts` throw at import time if `DATABASE_URL` is missing.
+Copy `.env.example` to `.env` (git-ignored). Required values: `DATABASE_URL` (the Neon **pooled** connection string), `BETTER_AUTH_SECRET` (generate with `npx auth@latest secret`), `BETTER_AUTH_URL`, and `NEXT_PUBLIC_APP_URL`. Next.js loads `.env` itself; `drizzle.config.ts` and `src/db/seed.ts` load it through dotenv (an optional `.env.local` takes precedence if present). `drizzle.config.ts` and `src/db/index.ts` throw at import time if `DATABASE_URL` is missing, and `src/instrumentation.ts` refuses to start the server if `DATABASE_URL`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing.
+
+“Solo project: commit directly to master and push, no feature branches unless I ask.”
 
 ## Architecture
 
 - **DB layer**: `src/db/index.ts` exports a single `db`. It is Drizzle over the Neon **HTTP** driver (`drizzle-orm/neon-http`), with the full schema module attached so relational queries (`db.query.*`) work. The HTTP driver doesn't support interactive transactions. If you need them, switch to the Neon WebSocket/Pool driver.
-- **Schema**: `src/db/schema.ts` is reserved for Better Auth and is **overwritten** by `npm run auth:generate`. It is currently empty, so auth will not work until you run `auth:generate` and then migrate. Better Auth looks up its tables by model name (`user`, `session`, `account`, `verification`).
+- **Schema**: `src/db/schema.ts` is reserved for Better Auth and is **overwritten** by `npm run auth:generate`. It holds the generated Better Auth tables (migration `drizzle/0001_better_auth.sql`); after changing auth plugins, rerun `auth:generate`, then `db:generate` and `db:migrate`. Better Auth looks up its tables by model name (`user`, `session`, `account`, `verification`).
 - **Database conventions**:
   - App tables go in `src/db/catalog-schema.ts`, never `schema.ts`. If you add another schema file, register it in both `drizzle.config.ts` and `src/db/index.ts`.
   - Change the schema with versioned migrations: `db:generate`, review and commit `drizzle/*.sql`, then `db:migrate`. Don't use `db:push`.
