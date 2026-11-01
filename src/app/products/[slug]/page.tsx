@@ -94,7 +94,7 @@ async function ProductView({ params }: Pick<PageProps<"/products/[slug]">, "para
               </ol>
             </nav>
 
-            <h1 className="mt-6 font-serif text-4xl leading-[1.05] font-normal tracking-[-0.01em] md:text-5xl">
+            <h1 className="type-title-serif mt-6">
               {product.name}
             </h1>
 
@@ -107,7 +107,7 @@ async function ProductView({ params }: Pick<PageProps<"/products/[slug]">, "para
               <AddToBag productName={product.name} soldOut={stock.status === "sold-out"} />
             </div>
 
-            <p className="mt-8 font-serif text-lg leading-relaxed tracking-normal">{product.description}</p>
+            <p className="type-lede mt-8">{product.description}</p>
 
             <div className="hairline-b mt-10">
               <Disclosure title="Details & care" open>
@@ -144,7 +144,7 @@ function Disclosure({ title, open, children }: { title: string; open?: boolean; 
     <details open={open} className="group hairline-t">
       <summary className="type-eyebrow flex cursor-pointer list-none items-center justify-between py-5 [&::-webkit-details-marker]:hidden">
         {title}
-        <span aria-hidden className="text-base leading-none font-light transition-transform duration-(--duration-base) group-open:rotate-45">
+        <span aria-hidden className="type-title leading-none font-light transition-transform duration-(--duration-base) group-open:rotate-45">
           +
         </span>
       </summary>

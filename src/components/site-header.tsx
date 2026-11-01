@@ -39,7 +39,7 @@ export function SiteHeader() {
             <MobileMenu navigation={navigation} />
           </div>
 
-          <Link href="/" className="wordmark text-2xl md:text-[1.75rem]" aria-label="Atelier home">
+          <Link href="/" className="wordmark" aria-label="Atelier home">
             Atelier
           </Link>
 

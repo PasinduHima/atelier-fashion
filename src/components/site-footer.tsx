@@ -83,7 +83,7 @@ export function SiteFooter() {
 
       <p
         aria-hidden
-        className="wordmark overflow-hidden pb-6 text-center text-[18vw] leading-none font-thin tracking-[0.15em]"
+        className="wordmark wordmark-giant overflow-hidden pb-6 text-center"
       >
         Atelier
       </p>

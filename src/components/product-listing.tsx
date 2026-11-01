@@ -30,7 +30,7 @@ export function ProductListing({ title, intro, products }: ProductListingProps) 
             <li aria-current="page">{title}</li>
           </ol>
         </nav>
-        <h1 className="font-serif text-4xl leading-[1.05] font-normal tracking-[-0.01em] md:text-5xl">{title}</h1>
+        <h1 className="type-title-serif">{title}</h1>
         {intro ? <p className="type-body max-w-md text-muted">{intro}</p> : null}
         <p className="type-label">
           {count} {count === 1 ? "product" : "products"}

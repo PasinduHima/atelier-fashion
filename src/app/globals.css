@@ -78,37 +78,58 @@
   --container-site: 100rem; /* max content width (1600px) */
 
   /* --- Type scale (size / line-height / tracking) -------------------------
-     Tight negative tracking everywhere; display sizes use a very light weight. */
-  --text-caption: 0.5625rem; /* 9px: badges, legal */
-  --text-caption--line-height: 0.75rem;
-  --text-caption--letter-spacing: -0.03em;
+     Fluid sizes grow linearly from a 390px phone to a 1280px desktop
+     (clamp(min, rem + vw, max)) and hold steady outside that range. Sizes are
+     rem so they respect the user's browser font size; the root font-size is
+     never changed. Nothing renders below 12px. */
+  --text-caption: 0.75rem; /* 12px: badges, legal */
+  --text-caption--line-height: 1.33;
+  --text-caption--letter-spacing: 0.02em;
 
-  --text-label: 0.75rem; /* 12px: nav, buttons, prices, product names */
-  --text-label--line-height: 1rem;
-  --text-label--letter-spacing: -0.03em;
+  --text-eyebrow: clamp(0.75rem, 0.72rem + 0.11vw, 0.8125rem); /* 12 -> 13px: tracked uppercase nav, kickers, breadcrumbs */
+  --text-eyebrow--line-height: 1.35;
 
-  --text-body: 1rem; /* 16px */
-  --text-body--line-height: 1.5rem;
-  --text-body--letter-spacing: -0.04em;
+  --text-label: clamp(0.8125rem, 0.785rem + 0.11vw, 0.875rem); /* 13 -> 14px: labels, buttons */
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: -0.01em;
 
-  --text-title: 1.25rem; /* 20px */
-  --text-title--line-height: 1.5rem;
-  --text-title--letter-spacing: -0.04em;
+  --text-meta: clamp(0.875rem, 0.85rem + 0.11vw, 0.9375rem); /* 14 -> 15px: product names, prices, meta */
+  --text-meta--line-height: 1.4;
+  --text-meta--letter-spacing: -0.02em;
 
-  --text-heading: 1.5rem; /* 24px */
-  --text-heading--line-height: 2rem;
-  --text-heading--letter-spacing: -0.03em;
+  --text-body: clamp(1rem, 0.97rem + 0.11vw, 1.0625rem); /* 16 -> 17px */
+  --text-body--line-height: 1.6;
+  --text-body--letter-spacing: -0.02em;
 
-  --text-display: 2rem; /* 32px */
-  --text-display--line-height: 3rem;
+  --text-lede: clamp(1.125rem, 1.015rem + 0.45vw, 1.375rem); /* 18 -> 22px: serif intro copy */
+  --text-lede--line-height: 1.6;
+
+  --text-title: clamp(1.25rem, 1.195rem + 0.225vw, 1.375rem); /* 20 -> 22px */
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.03em;
+
+  --text-heading: clamp(1.625rem, 1.405rem + 0.9vw, 2.125rem); /* 26 -> 34px: uppercase section headings */
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.02em;
+
+  --text-display: clamp(2.25rem, 1.48rem + 3.15vw, 4rem); /* 36 -> 64px: light sans display */
+  --text-display--line-height: 1.05;
   --text-display--letter-spacing: -0.03em;
 
-  --text-display-lg: 3.5rem; /* 56px: hero headlines on desktop */
-  --text-display-lg--line-height: 4rem;
-  --text-display-lg--letter-spacing: -0.04em;
+  --text-title-serif: clamp(2.5rem, 1.95rem + 2.25vw, 3.75rem); /* 40 -> 60px: serif page H1 (PDP, collections) */
+  --text-title-serif--line-height: 1.08;
+  --text-title-serif--letter-spacing: -0.01em;
 
-  --tracking-label: -0.03em;
+  --text-hero: clamp(3.75rem, 1.89rem + 7.64vw, 8rem); /* 60 -> 128px: serif hero headline */
+  --text-hero--line-height: 1;
+  --text-hero--letter-spacing: -0.02em;
+
+  --text-wordmark: clamp(1.5rem, 1.335rem + 0.675vw, 1.875rem); /* 24 -> 30px: header wordmark */
+
+  --tracking-label: -0.01em;
+  --tracking-eyebrow: 0.12em; /* wide tracking for small uppercase: eyebrows, buttons */
   --tracking-wordmark: 0.2em;
+  --tracking-wordmark-lg: 0.15em; /* slightly tighter for the giant footer wordmark */
 
   /* --- Radius: square by default --------------------------------------- */
   --radius-none: 0;
@@ -273,12 +294,33 @@
   line-height: var(--text-display--line-height);
   letter-spacing: var(--text-display--letter-spacing);
   font-weight: 100;
+}
 
-  @media (width >= 64rem) {
-    font-size: var(--text-display-lg);
-    line-height: var(--text-display-lg--line-height);
-    letter-spacing: var(--text-display-lg--letter-spacing);
-  }
+/* Large serif hero headline. */
+@utility type-hero {
+  font-family: var(--font-serif);
+  font-size: var(--text-hero);
+  line-height: var(--text-hero--line-height);
+  letter-spacing: var(--text-hero--letter-spacing);
+  font-weight: 400;
+}
+
+/* Serif page title: product and collection H1s. */
+@utility type-title-serif {
+  font-family: var(--font-serif);
+  font-size: var(--text-title-serif);
+  line-height: var(--text-title-serif--line-height);
+  letter-spacing: var(--text-title-serif--letter-spacing);
+  font-weight: 400;
+}
+
+/* Serif intro copy: hero body, product description. */
+@utility type-lede {
+  font-family: var(--font-serif);
+  font-size: var(--text-lede);
+  line-height: var(--text-lede--line-height);
+  letter-spacing: normal;
+  font-weight: 400;
 }
 
 @utility type-heading {
@@ -314,9 +356,9 @@
 
 /* Same size as label but sentence case: product names, prices, meta. */
 @utility type-meta {
-  font-size: var(--text-label);
-  line-height: var(--text-label--line-height);
-  letter-spacing: var(--text-label--letter-spacing);
+  font-size: var(--text-meta);
+  line-height: var(--text-meta--line-height);
+  letter-spacing: var(--text-meta--letter-spacing);
   font-weight: 500;
 }
 
@@ -329,9 +371,9 @@
 
 /* Small, widely tracked uppercase label: announcement bar, header nav, hero kicker. */
 @utility type-eyebrow {
-  font-size: 0.6875rem; /* 11px */
-  line-height: 1rem;
-  letter-spacing: 0.14em;
+  font-size: var(--text-eyebrow);
+  line-height: var(--text-eyebrow--line-height);
+  letter-spacing: var(--tracking-eyebrow);
   font-weight: 500;
   text-transform: uppercase;
 }
@@ -339,9 +381,19 @@
 /* Spaced serif wordmark for the store name in the header. */
 @utility wordmark {
   font-family: var(--font-serif);
+  font-size: var(--text-wordmark);
+  line-height: 1;
   font-weight: 400;
   letter-spacing: var(--tracking-wordmark);
   text-transform: uppercase;
+}
+
+/* Viewport-wide, hairline-weight wordmark closing the footer. Use with wordmark. */
+@utility wordmark-giant {
+  font-size: 18vw;
+  line-height: 1;
+  font-weight: 100;
+  letter-spacing: var(--tracking-wordmark-lg);
 }
 
 /* -----------------------------------------------------------------------------
@@ -506,7 +558,7 @@
 
 /* -----------------------------------------------------------------------------
    Buttons
-   48px tall, square corners, 12px bold uppercase, slow eased transitions.
+   48px tall, square corners, 13-14px bold tracked uppercase, slow eased transitions.
    -------------------------------------------------------------------------- */
 @utility btn {
   display: inline-flex;
@@ -520,7 +572,7 @@
   font-size: var(--text-label);
   line-height: var(--text-label--line-height);
   font-weight: 700;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
@@ -678,7 +730,8 @@
   border: 0;
   border-bottom: 1px solid var(--color-line);
   border-radius: 0;
-  font-size: var(--text-body);
+  /* Fixed 16px (not fluid body size) so iOS Safari never zooms on focus. */
+  font-size: 1rem;
   letter-spacing: var(--text-body--letter-spacing);
   transition: border-color var(--duration-base) var(--ease-luxe);
 

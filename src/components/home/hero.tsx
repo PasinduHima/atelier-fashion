@@ -31,18 +31,18 @@ export function Hero() {
             <p className="type-eyebrow">{hero.kicker}</p>
             <h1
               id="hero-title"
-              className="mt-4 font-serif text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.92] font-normal tracking-[-0.02em]"
+              className="type-hero mt-4"
             >
               {hero.title}
             </h1>
-            <p className="mt-6 max-w-sm font-serif text-lg leading-relaxed tracking-normal md:text-xl">
+            <p className="type-lede mt-6 max-w-sm">
               {hero.body}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href={primary.href} className="btn btn-light min-w-56 tracking-[0.14em]">
+              <Link href={primary.href} className="btn btn-light min-w-56">
                 {primary.label}
               </Link>
-              <Link href={secondary.href} className="btn btn-outline-light min-w-48 tracking-[0.14em]">
+              <Link href={secondary.href} className="btn btn-outline-light min-w-48">
                 {secondary.label}
               </Link>
             </div>

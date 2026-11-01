@@ -22,7 +22,7 @@ export function AddToBag({ productName, soldOut }: AddToBagProps) {
 
   if (soldOut) {
     return (
-      <button type="button" className="btn btn-primary w-full tracking-[0.14em]" disabled>
+      <button type="button" className="btn btn-primary w-full" disabled>
         Sold out
       </button>
     );
@@ -32,7 +32,7 @@ export function AddToBag({ productName, soldOut }: AddToBagProps) {
     <>
       <button
         type="button"
-        className="btn btn-primary w-full tracking-[0.14em]"
+        className="btn btn-primary w-full"
         onClick={() => setAdded(true)}
       >
         {added ? "Added to bag" : "Add to bag"}
