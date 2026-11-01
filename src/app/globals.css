@@ -665,6 +665,67 @@
   cursor: pointer;
 }
 
+/* Size option: a <label> wrapping a native radio, which stays in the
+   accessibility tree and keyboard order but is drawn as a square chip. */
+@utility size-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base) var(--ease-luxe),
+    color var(--duration-base) var(--ease-luxe),
+    border-color var(--duration-base) var(--ease-luxe);
+
+  & input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  @media (hover: hover) {
+    &:hover:not(:has(input:disabled)) {
+      border-color: var(--color-ink);
+    }
+  }
+
+  &:has(input:checked) {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border-color: var(--color-ink);
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  &:has(input:disabled) {
+    background: var(--color-surface);
+    color: var(--color-muted);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  /* Forced colours drop backgrounds, so mark the chosen size another way. */
+  @media (forced-colors: active) {
+    &:has(input:checked) {
+      outline: 3px solid Highlight;
+      outline-offset: -3px;
+      text-decoration: underline;
+    }
+  }
+}
+
 /* -----------------------------------------------------------------------------
    Links
    -------------------------------------------------------------------------- */

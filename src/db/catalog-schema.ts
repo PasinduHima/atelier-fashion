@@ -1,11 +1,12 @@
 /**
- * App tables: categories, products, variants (with stock) and collections.
+ * App tables: categories, products, variants (with stock), collections and carts.
  *
  * Kept out of `schema.ts` on purpose: `npm run auth:generate` overwrites that
  * file with the Better Auth tables.
  */
 import { relations, sql } from "drizzle-orm";
-import { boolean, check, index, integer, pgTable, primaryKey, text, timestamp, unique } from "drizzle-orm/pg-core";
+import { boolean, check, index, integer, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { user } from "./schema";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -105,6 +106,39 @@ export const collectionProducts = pgTable(
   (t) => [
     primaryKey({ columns: [t.collectionId, t.productId] }),
     index("collection_products_product_id_idx").on(t.productId),
+  ],
+);
+
+/**
+ * Shopping bags. A guest cart has no user and is found through the signed
+ * `atelier_cart` cookie; a signed-in user has at most one cart. Prices are
+ * never stored here; they are always read live from products/variants.
+ */
+export const carts = pgTable("carts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  ...timestamps,
+});
+
+export const cartItems = pgTable(
+  "cart_items",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    cartId: uuid("cart_id")
+      .notNull()
+      .references(() => carts.id, { onDelete: "cascade" }),
+    variantId: integer("variant_id")
+      .notNull()
+      .references(() => productVariants.id, { onDelete: "cascade" }),
+    quantity: integer("quantity").notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    unique("cart_items_cart_variant_unique").on(t.cartId, t.variantId),
+    index("cart_items_variant_id_idx").on(t.variantId),
+    check("cart_items_quantity_positive", sql`${t.quantity} > 0`),
   ],
 );
 

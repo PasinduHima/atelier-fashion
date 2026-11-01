@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { BagLink, BagLinkView } from "@/components/bag-link";
 import { MobileMenu } from "@/components/mobile-menu";
 
 const navigation = [
@@ -17,8 +19,6 @@ const navigation = [
  * client component here).
  */
 export function SiteHeader() {
-  const bagCount = 0;
-
   return (
     <>
       <div className="hairline-b flex h-8 items-center justify-center bg-paper px-gutter text-center text-ink">
@@ -51,13 +51,9 @@ export function SiteHeader() {
             <Link href="/account" className="type-eyebrow hidden transition-opacity duration-(--duration-base) hover:opacity-60 md:inline">
               Account
             </Link>
-            <Link
-              href="/bag"
-              className="type-eyebrow transition-opacity duration-(--duration-base) hover:opacity-60"
-              aria-label={`Bag, ${bagCount} items`}
-            >
-              Bag ({bagCount})
-            </Link>
+            <Suspense fallback={<BagLinkView count={null} />}>
+              <BagLink />
+            </Suspense>
           </nav>
         </div>
       </header>

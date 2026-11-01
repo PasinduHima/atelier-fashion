@@ -4,10 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SectionHeading } from "@/components/home/section-heading";
-import { AddToBag } from "@/components/product/add-to-bag";
-import { StockStatus } from "@/components/product/stock-status";
+import { PurchasePanel } from "@/components/product/purchase-panel";
 import { ProductCard } from "@/components/product-card";
-import { categoryHref, formatPrice, getStockState } from "@/lib/catalog";
+import { categoryHref, getStockState } from "@/lib/catalog";
 import { services } from "@/lib/content";
 import { getAllProductSlugs, getProductBySlug, getRelatedProducts } from "@/lib/products";
 
@@ -98,13 +97,8 @@ async function ProductView({ params }: Pick<PageProps<"/products/[slug]">, "para
               {product.name}
             </h1>
 
-            <div className="mt-5 flex items-center justify-between gap-4">
-              <p className="type-body">{formatPrice(product.priceCents)}</p>
-              <StockStatus state={stock} />
-            </div>
-
-            <div className="mt-8">
-              <AddToBag productName={product.name} soldOut={stock.status === "sold-out"} />
+            <div className="mt-5">
+              <PurchasePanel basePriceCents={product.priceCents} variants={product.variants} />
             </div>
 
             <p className="type-lede mt-8">{product.description}</p>

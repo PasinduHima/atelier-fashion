@@ -29,6 +29,13 @@
       "when": 1793565151302,
       "tag": "0003_move_stock_to_variants",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793565556063,
+      "tag": "0004_carts",
+      "breakpoints": true
     }
   ]
 }
