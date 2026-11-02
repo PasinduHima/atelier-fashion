@@ -13,14 +13,22 @@ const navigation = [
 ];
 
 /**
- * Announcement bar plus a sticky white header: shop links on the left, the
- * serif wordmark centred, and Search / Account / Bag on the right. Below
- * 1440px the shop links move into a slide-out drawer (MobileMenu, the only
- * client component here).
+ * Demo notice and announcement bar, then a sticky white header: shop links on
+ * the left, the serif wordmark centred, and Search / Account / Bag on the
+ * right. Below 1440px the shop links move into a slide-out drawer
+ * (MobileMenu, the only client component here).
  */
 export function SiteHeader() {
   return (
     <>
+      {/* On every page and never dismissible. It wraps on narrow screens rather
+          than truncating, so the test card number is always readable. */}
+      <div className="hairline-b flex min-h-8 items-center justify-center bg-paper px-gutter py-1.5 text-center text-ink">
+        <p className="type-eyebrow">
+          Demo store. Payments are in Stripe test mode, use card{" "}
+          <span className="whitespace-nowrap">4242 4242 4242 4242</span>. No real orders are fulfilled.
+        </p>
+      </div>
       <div className="hairline-b flex h-8 items-center justify-center bg-paper px-gutter text-center text-ink">
         <p className="type-eyebrow truncate">Complimentary delivery on orders over $500</p>
       </div>

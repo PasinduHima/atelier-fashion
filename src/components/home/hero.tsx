@@ -3,8 +3,10 @@ import Link from "next/link";
 import { hero } from "@/lib/content";
 
 /**
- * Black-and-white campaign image that fills the rest of the first screen,
- * with a serif headline and two calls to action anchored bottom-left.
+ * Black-and-white campaign image that fills the rest of the first screen
+ * (below the header and the two 2rem bars above it: demo notice and
+ * announcement), with a serif headline and two calls to action anchored
+ * bottom-left.
  */
 export function Hero() {
   const [primary, secondary] = hero.ctas;
@@ -12,7 +14,7 @@ export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="media-cover surface-dark relative h-[calc(100svh-var(--header-h)-2rem)] min-h-[36rem] bg-ink"
+      className="media-cover surface-dark relative h-[calc(100svh-var(--header-h)-4rem)] min-h-[36rem] bg-ink"
     >
       <Image
         src={hero.image}
