@@ -18,6 +18,7 @@ import { CART_COOKIE, verifyCartCookie } from "@/lib/cart-cookie";
 export type CartLine = {
   id: number;
   variantId: number;
+  sku: string;
   quantity: number;
   productSlug: string;
   productName: string;
@@ -42,18 +43,23 @@ export type Cart = {
 };
 
 /**
- * The signed-in user's id, or null. One session lookup per request.
+ * The signed-in user, or null. One session lookup per request.
  *
- * `connection()` keeps every caller (the header's bag count and /bag) out of
- * prerenders and prefetched App Shells: Better Auth checks the session's
+ * `connection()` keeps every caller (the header's bag count, /bag, checkout)
+ * out of prerenders and prefetched App Shells: Better Auth checks the session's
  * expiry against the current time, which Next forbids while prerendering, and
- * a bag count baked into a prefetched shell would go stale.
+ * a bag count baked into a prefetched shell would go stale after checkout.
  */
-export const getSessionUserId = cache(async (): Promise<string | null> => {
+export const getSessionUser = cache(async (): Promise<{ id: string; email: string; name: string } | null> => {
   await connection();
   const session = await auth.api.getSession({ headers: await headers() });
-  return session?.user.id ?? null;
+  return session ? { id: session.user.id, email: session.user.email, name: session.user.name } : null;
 });
+
+/** The signed-in user's id, or null. */
+export async function getSessionUserId(): Promise<string | null> {
+  return (await getSessionUser())?.id ?? null;
+}
 
 /** The verified guest cart id from the cookie, or null. */
 export async function getGuestCartId(): Promise<string | null> {
@@ -90,6 +96,7 @@ export async function getCart(): Promise<Cart> {
     .select({
       id: cartItems.id,
       variantId: cartItems.variantId,
+      sku: productVariants.sku,
       quantity: cartItems.quantity,
       productSlug: products.slug,
       productName: products.name,

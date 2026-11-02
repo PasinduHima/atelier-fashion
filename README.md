@@ -18,6 +18,37 @@ Requires Node.js 20.9.0 or later.
 6. `npm run db:migrate` again to create the auth tables.
 7. `npm run dev`
 
+## Local checkout (Stripe, test mode)
+
+Orders are only marked paid, stock reduced and the bag emptied when the **Stripe webhook** reaches
+`/api/stripe/webhook`. Stripe can't call `localhost`, so locally the Stripe CLI must forward events,
+**in a second terminal alongside `npm run dev`**:
+
+```bash
+npm run dev            # terminal 1
+npm run stripe:listen  # terminal 2: forwards Checkout events to localhost:3000/api/stripe/webhook
+```
+
+Without `stripe:listen` running, test payments succeed in Stripe but orders stay `pending`, the
+bag doesn't empty, and the confirmation page keeps saying it's still confirming the payment.
+
+One-time setup:
+
+1. Install the Stripe CLI (`npm i -g @stripe/cli`) and run `stripe login`, choosing the same sandbox
+   your API key comes from.
+2. In `.env`, set `STRIPE_SECRET_KEY` to a restricted test key (`rk_test_…`: Checkout Sessions write,
+   Customers write, PaymentIntents read) and `STRIPE_WEBHOOK_SECRET` to the value printed by
+   `stripe listen --print-secret`. It must be the CLI's secret, not a Dashboard endpoint's, or
+   every forwarded event is rejected with a 400. Restart `npm run dev` after editing `.env`.
+
+Test with Stripe's test cards, such as `4242 4242 4242 4242` (succeeds), `4000 0025 0000 3155`
+(3-D Secure) or `4000 0000 0000 0002` (declined), with any future expiry and any CVC.
+
+If an event was missed (for example the listener wasn't running), find it with
+`stripe events list --type checkout.session.completed` and replay it with
+`stripe events resend <event_id>` while `stripe:listen` runs. The handler skips events it has
+already processed, so replays are safe.
+
 ## Schema changes
 
 Use versioned migrations: `npm run db:generate`, review and commit `drizzle/*.sql`, then `npm run db:migrate`.
@@ -33,4 +64,7 @@ throwaway local database, never on a shared or production one.
 - `src/lib/auth.ts` — Better Auth server instance (Drizzle adapter)
 - `src/lib/auth-client.ts` — Better Auth React client
 - `src/app/api/auth/[...all]/route.ts` — Better Auth route handler
+- `src/app/checkout/actions.ts` — starts Stripe Checkout from the bag (writes a `pending` order)
+- `src/app/api/stripe/webhook/route.ts` — Stripe webhook: the only place orders become paid
+- `src/lib/orders.ts` — fulfilment (order paid, stock reduced, bag emptied in one SQL statement)
 - `drizzle.config.ts` — drizzle-kit config (migrations go to `./drizzle`)

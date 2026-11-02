@@ -65,7 +65,7 @@ export const story = {
 export const services = [
   {
     title: "Complimentary shipping",
-    body: "Free express delivery on every order, packed in our signature box.",
+    body: "Free delivery on orders over $500 ($25 below), packed in our signature box.",
   },
   {
     title: "Book an appointment",

@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BagAnnouncer } from "@/components/bag/bag-announcer";
+import { CheckoutButton } from "@/components/bag/checkout-button";
 import { BAG_TITLE_ID } from "@/components/bag/ids";
 import { QuantityControl } from "@/components/bag/quantity-control";
 import { formatPrice } from "@/lib/catalog";
 import { getCart, type CartLine } from "@/lib/cart";
+import { quoteShipping } from "@/lib/shipping";
 
 export const metadata: Metadata = {
   title: "Your bag",
@@ -44,6 +46,9 @@ async function BagContents() {
     );
   }
 
+  const shipping = quoteShipping(cart.subtotalCents);
+  const needsFixing = cart.lines.some((line) => !line.available || line.stock <= 0 || line.quantity > line.stock);
+
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
       <section aria-labelledby="bag-items">
@@ -66,17 +71,24 @@ async function BagContents() {
             <dt>Subtotal</dt>
             <dd className="tabular-nums">{formatPrice(cart.subtotalCents)}</dd>
           </div>
-          <div className="flex justify-between gap-4 text-muted">
+          <div className="flex justify-between gap-4">
             <dt>Shipping</dt>
-            <dd>Calculated at checkout</dd>
+            <dd className="tabular-nums">{shipping.amountCents === 0 ? "Complimentary" : formatPrice(shipping.amountCents)}</dd>
+          </div>
+          <div className="hairline-t flex justify-between gap-4 pt-3">
+            <dt>Total</dt>
+            <dd className="tabular-nums">{formatPrice(cart.subtotalCents + shipping.amountCents)}</dd>
           </div>
         </dl>
-        <button type="button" className="btn btn-primary w-full" disabled aria-describedby="checkout-note">
-          Checkout
-        </button>
-        <p id="checkout-note" className="type-caption mt-3 text-center text-muted">
-          Coming soon
-        </p>
+        {shipping.remainingForFreeCents > 0 ? (
+          <p className="type-caption -mt-2 mb-6 text-muted">
+            Add {formatPrice(shipping.remainingForFreeCents)} more for complimentary shipping.
+          </p>
+        ) : null}
+        {needsFixing ? (
+          <p className="type-caption mb-3 text-danger">Please update the items marked above before checking out.</p>
+        ) : null}
+        <CheckoutButton disabled={needsFixing} />
       </section>
     </div>
   );

@@ -22,7 +22,7 @@ export function SiteHeader() {
   return (
     <>
       <div className="hairline-b flex h-8 items-center justify-center bg-paper px-gutter text-center text-ink">
-        <p className="type-eyebrow truncate">Complimentary delivery and returns</p>
+        <p className="type-eyebrow truncate">Complimentary delivery on orders over $500</p>
       </div>
 
       <header className="hairline-b sticky top-0 z-40 h-header bg-paper text-ink">
