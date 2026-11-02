@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, asc, eq, sql } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
+import { connection } from "next/server";
 import { cache } from "react";
 import { db } from "@/db";
 import { cartItems, carts, products, productVariants } from "@/db/catalog-schema";
@@ -40,8 +41,16 @@ export type Cart = {
   subtotalCents: number;
 };
 
-/** The signed-in user's id, or null. One session lookup per request. */
+/**
+ * The signed-in user's id, or null. One session lookup per request.
+ *
+ * `connection()` keeps every caller (the header's bag count and /bag) out of
+ * prerenders and prefetched App Shells: Better Auth checks the session's
+ * expiry against the current time, which Next forbids while prerendering, and
+ * a bag count baked into a prefetched shell would go stale.
+ */
 export const getSessionUserId = cache(async (): Promise<string | null> => {
+  await connection();
   const session = await auth.api.getSession({ headers: await headers() });
   return session?.user.id ?? null;
 });
