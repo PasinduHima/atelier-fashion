@@ -21,7 +21,12 @@ export type CheckoutState = { status: "idle" | "error"; message: string };
 // request latency from pushing `expires_at` under it (Stripe rejects that).
 const CHECKOUT_TTL_SECONDS = 31 * 60;
 
-const appUrl = () => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+/** The site's own URL, for Stripe's redirects back. Checked at startup in src/instrumentation.ts. */
+function appUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!url) throw new Error("NEXT_PUBLIC_APP_URL is not set");
+  return url.replace(/\/+$/, "");
+}
 
 async function getOrCreateStripeCustomer(user: { id: string; email: string; name: string }): Promise<string> {
   const [existing] = await db

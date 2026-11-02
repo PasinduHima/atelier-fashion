@@ -16,7 +16,7 @@ never read .env
 
 ## Setup / environment
 
-Copy `.env.example` to `.env` (git-ignored). Required values: `DATABASE_URL` (the Neon **pooled** connection string), `BETTER_AUTH_SECRET` (generate with `npx auth@latest secret`), `BETTER_AUTH_URL`, and `NEXT_PUBLIC_APP_URL`. Next.js loads `.env` itself; `drizzle.config.ts` and `src/db/seed.ts` load it through dotenv (an optional `.env.local` takes precedence if present). `drizzle.config.ts` and `src/db/index.ts` throw at import time if `DATABASE_URL` is missing, and `src/instrumentation.ts` refuses to start the server if `DATABASE_URL`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL` is missing.
+Copy `.env.example` to `.env` (git-ignored). Required values: `DATABASE_URL` (the Neon **pooled** connection string), `BETTER_AUTH_SECRET` (generate with `npx auth@latest secret`), `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL` (the same site as `BETTER_AUTH_URL`), `STRIPE_SECRET_KEY` (a test key) and `STRIPE_WEBHOOK_SECRET`. Next.js loads `.env` itself; `drizzle.config.ts` and `src/db/seed.ts` load it through dotenv (an optional `.env.local` takes precedence if present). `drizzle.config.ts` and `src/db/index.ts` throw at import time if `DATABASE_URL` is missing, and `src/instrumentation.ts` refuses to start the server if a required value is missing, if `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` aren't the same origin, or if `STRIPE_SECRET_KEY` is a live key. Production setup is in the README's "Deploying to Vercel" section.
 
 “Solo project: commit directly to master and push, no feature branches unless I ask.”
 
